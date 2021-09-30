@@ -1,0 +1,13 @@
+[Unit]
+Description=WCLIGHT
+After=syslog.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/Dev/wc-light
+ExecStart=/usr/bin/python3 /home/pi/Dev/wc-light/wc-light.py
+TimeoutStopSec=5
+StandardOutput=null
+
+[Install]
+WantedBy = multi-user.target
