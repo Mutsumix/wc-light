@@ -7,6 +7,8 @@ from time import sleep
 import threading
 import requests
 import settings
+import json
+import random
 
 #OCCUPIED_COLOR
 #VACANT_COLOR
@@ -23,14 +25,16 @@ def sense():
     
     # Hue settings
     HUE_API_OUTSIDE=settings.HUE_API_OUTSIDE
-
+    HUE_API_INSIDE=settings.HUE_API_INSIDE
+    
     LIGHT_DURATION=15
-    MUSIC_DURATION=30
+    MUSIC_DURATION=45
 
     light_count_down=0
     music_count_down=0
     #count=0
     #count_no=0
+        
     
     try:
         
@@ -45,9 +49,10 @@ def sense():
                 
                 #RED light on
                 result = requests.put(HUE_API_OUTSIDE, json = {"on":True, "bri":60, "xy":[0.7, 0.26]})
+                #INSERT light on
+                result = requests.put(HUE_API_INSIDE, json = {"on":True, "bri":200})
                 #sound on
-                #sound_on("uminomierumachi", light_count_down)
-                #sound_on("chigiri", music_count_down)
+                sound_on(music_count_down)
                 light_count_down=LIGHT_DURATION
                 music_count_down=MUSIC_DURATION
   
@@ -62,12 +67,18 @@ def sense():
                           
                     #light off
                     result = requests.put(HUE_API_OUTSIDE, json = {"on":False})
-                                    
+                
+                if music_count_down == 5:
+                    result = requests.put(HUE_API_INSIDE, json = {"on":True, "bri":100})
+                    
                 if music_count_down == 0:
                     print('music turns off')
                     
-                    #misic off
-                    #sound_off()
+                    
+                    #INSIDE light off
+                    result = requests.put(HUE_API_INSIDE, json = {"on":True, "bri":30})
+                    #music off
+                    sound_off()
             
                 #count_no+=1
                 #print('there is no one: ' + str(count_no))
@@ -82,10 +93,18 @@ def sense():
 def callHueApi(color=0):
     pass
 
-def sound_on(se, count_down):
+def sound_on(count_down):
     if count_down < 0:
-        print(count_down)
-        subprocess.Popen(['mpg321', '-g', '5', '-q', 'music/' + se + '.mp3'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        songs = json.load(open('music/songlist.json', 'r'))
+        song_no = random.randint(1, len(songs))
+        se = ''
+        
+        for song in songs:
+            if song_no == songs[song]['no']:
+                se = songs[song]['title']
+        
+        print(se)
+        subprocess.Popen(['mpg321', '-g', '3', '-q', 'music/' + se + '.mp3'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 #    else:
 #        print('process ongoing')
     
